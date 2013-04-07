@@ -19,16 +19,16 @@
 /* Procfs maximum buffer size. */
 #define PROCFS_MAX_SIZE 16
 #define FILE_COUNT 4
+#define ACCESS_TOKEN 0644
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Some interesting people :)");
+#define MODULE_PREFIX "[CALC_PROC] "
 
-static int proc_read(char*, char**, off_t, int, int*, void*);
+int proc_read(char*, char**, off_t, int, int*, void*);
+int proc_write(struct file*, const char*, unsigned long, void*);
 
-static int proc_write(struct file*, const char*, unsigned long, void*);
-
-static int __init module_load(void);
-
-static void __exit module_upload(void);
+int __init module_load(void);
+void __exit module_upload(void);
 
 #endif // _CALC_PROC_H_
