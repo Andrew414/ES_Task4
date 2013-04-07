@@ -37,7 +37,7 @@ int __init module_load(void)
 	return 0;
 }
 
-static void __exit module_unload(void)
+void __exit module_unload(void)
 {	
 	int i;
 
