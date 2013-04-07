@@ -15,3 +15,12 @@
 
 /* Procfs maximum buffer size. */
 #define PROCFS_MAX_SIZE 16
+
+
+static int proc_read(char*, char**, off_t, int, int*, void*);
+
+static int proc_write(struct file*, const char*, unsigned long, void*);
+
+static int __init module_load(void);
+
+static void __exit module_upload(void);
