@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo 1 > /proc/calc_first
+echo 2 > /proc/calc_second
+echo + > /proc/calc_operator
+
+cat /proc/calc_result
