@@ -1,15 +1,17 @@
 #include "calc.h"
 
-static char names[][PROCFS_MAX_SIZE] = {PROCFS_FIRST, PROCFS_SECOND, PROCFS_OPERAND, PROCFS_RESULT};
-static int indices[FILE_COUNT];
-static char** procfs_buffer;
-static struct proc_dir_entry** child_procs;
+char names[][PROCFS_MAX_SIZE] = {PROCFS_FIRST, PROCFS_SECOND, PROCFS_OPERAND, PROCFS_RESULT};
+char** procfs_buffer;
+struct proc_dir_entry** proc_entries;
+
+#define _CALC_C_INC_
+#include "calc.c"
 
 int __init module_load(void)
 {
-  int i;
+    int i;
 
-	printk(KERN_INFO "Calculator module is loaded.\n");
+	printk(KERN_INFO MODULE_PREFIX "Module is loaded.\n");
 
 	procfs_buffer = (char**) kmalloc(sizeof(char*) * FILE_COUNT, GFP_KERNEL);
 	for (i = 0; i < FILE_COUNT; i++) {
@@ -17,23 +19,22 @@ int __init module_load(void)
 		procfs_buffer[i][0] = '\0';
 	}
 
-	child_procs = (struct proc_dir_entry**) kmalloc(
-		sizeof(struct proc_dir_entry *) * 4, GFP_KERNEL);
+	proc_entries = (struct proc_dir_entry**) kmalloc(
+		sizeof(struct proc_dir_entry *) * FILE_COUNT, GFP_KERNEL);
 
 	for (i = 0; i < FILE_COUNT; i++) {
-		child_procs[i] = create_proc_entry(names[i], 0644, NULL);
-		if (!child_procs[i]) {
+		proc_entries[i] = create_proc_entry(names[i], ACCESS_TOKEN, NULL);
+		if (!proc_entries[i]) {
 			remove_proc_entry(names[i], NULL);
-			printk(KERN_ERR "Failed to create /proc/%s", names[i]);
-			return -ENOMEM;
+			printk(KERN_ERR MODULE_PREFIX "Failed to create /proc/%s", names[i]);
+			return 1;
 		}
-		indices[i] = i + 1;
-		child_procs[i]->read_proc  = proc_read;
-		child_procs[i]->write_proc = proc_write;
-		child_procs[i]->data	   = (void*) &indices[i];
+		proc_entries[i]->read_proc  = proc_read;
+		proc_entries[i]->write_proc = proc_write;
+		proc_entries[i]->data	   = (void*)(i+1);
 	}
 
-	printk(KERN_INFO "Calculator processes were created.\n");
+	printk(KERN_INFO MODULE_PREFIX "proc entries created!\n");
 	return 0;
 }
 
@@ -46,11 +47,11 @@ void __exit module_unload(void)
 		kfree(procfs_buffer[i]);
 	}
 
-	kfree(child_procs);
+	kfree(proc_entries);
 	kfree(procfs_buffer);
 
-	printk(KERN_INFO "[CALC PROC] proc entries were removed.\n");
-	printk(KERN_INFO "[CALC PROC] module is unloaded.\nBye-bye!");
+	printk(KERN_INFO MODULE_PREFIX "proc entries removed.\n");
+	printk(KERN_INFO MODULE_PREFIX "Bye-bye!");
 }
 
 module_init(module_load);
